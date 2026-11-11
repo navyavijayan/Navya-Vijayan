@@ -1580,16 +1580,35 @@
     }
 
     async function fetchSchedule() {
+      const isStaticHost = window.location.hostname.endsWith("github.io") || window.location.protocol === "file:";
+      if (isStaticHost) {
+        isStandaloneMode = true;
+        appState = computeStandaloneState();
+        updateSyncBadgeForMode();
+        renderAll();
+        return;
+      }
       try {
         const res = await fetch("/api/schedule");
         if (!res.ok) throw new Error("HTTP error");
         appState = await res.json();
         isStandaloneMode = false;
+        connectSSE();
       } catch (e) {
         isStandaloneMode = true;
         appState = computeStandaloneState();
       }
+      updateSyncBadgeForMode();
       renderAll();
+    }
+
+    function updateSyncBadgeForMode() {
+      const badge = document.getElementById("sseStatusBadge");
+      const text = document.getElementById("sseStatusText");
+      if (isStandaloneMode) {
+        badge.classList.remove("disconnected");
+        text.textContent = "LIVE TRACKER ACTIVE";
+      }
     }
 
     function renderAll() {
@@ -2155,24 +2174,29 @@
       }
     }
 
-    // Server-Sent Events (SSE) Real-Time Stream
+    // Server-Sent Events (SSE) Real-Time Stream (only used when connected to Python backend)
+    let _sseConnected = false;
     function connectSSE() {
+      if (isStandaloneMode || _sseConnected) return;
+      _sseConnected = true;
       const badge = document.getElementById("sseStatusBadge");
       const text = document.getElementById("sseStatusText");
       const es = new EventSource("/api/stream");
 
       es.addEventListener("connected", () => {
         badge.classList.remove("disconnected");
-        text.textContent = "LIVE REAL-TIME SYNC";
+        text.textContent = "LIVE SERVER SYNC";
       });
 
-      es.addEventListener("schedule_updated", (ev) => {
+      es.addEventListener("schedule_updated", () => {
         fetchSchedule();
       });
 
       es.onerror = () => {
-        badge.classList.add("disconnected");
-        text.textContent = "RECONNECTING...";
+        es.close();
+        _sseConnected = false;
+        isStandaloneMode = true;
+        updateSyncBadgeForMode();
       };
     }
 
@@ -2259,7 +2283,6 @@
     document.addEventListener("DOMContentLoaded", () => {
       importSharedUrlStateIfPresent();
       fetchSchedule();
-      connectSSE();
       updateLiveClock();
       setInterval(updateLiveClock, 1000);
 

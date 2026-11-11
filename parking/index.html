@@ -1,0 +1,2431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parking Spot Rotation — Navya &amp; Kulwinder (Nov 2026 – Aug 2027)</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --bg-card: #1e293b;
+      --bg-card-elevated: #26334d;
+      --bg-muted: #0b1120;
+      --border: #334155;
+      --text: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+
+      /* Navya Theme (Indigo / Royal Blue) */
+      --navya-primary: #6366f1;
+      --navya-light: #818cf8;
+      --navya-bg: rgba(99, 102, 241, 0.16);
+      --navya-border: rgba(129, 140, 248, 0.45);
+      --navya-pill: #4f46e5;
+
+      /* Kulwinder Theme (Emerald / Teal) */
+      --kul-primary: #10b981;
+      --kul-light: #34d399;
+      --kul-bg: rgba(16, 185, 129, 0.16);
+      --kul-border: rgba(52, 211, 153, 0.45);
+      --kul-pill: #059669;
+
+      /* Accent / Swap / Alert */
+      --swap-amber: #f59e0b;
+      --swap-bg: rgba(245, 158, 11, 0.16);
+      --danger: #ef4444;
+      --radius: 14px;
+      --radius-sm: 8px;
+      --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif;
+      background: radial-gradient(circle at top right, #1e1b4b 0%, var(--bg) 45%);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.45;
+      padding-bottom: 60px;
+    }
+
+    /* Top Header */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      backdrop-filter: blur(14px);
+      background: rgba(15, 23, 42, 0.85);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+    }
+
+    .topbar-inner {
+      max-width: 1360px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 11px;
+      background: linear-gradient(135deg, var(--navya-primary), var(--kul-primary));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 21px;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+    }
+
+    .brand-title {
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .spot-badge {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--bg-card-elevated);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .spot-badge:hover {
+      border-color: var(--navya-light);
+      color: var(--text);
+    }
+
+    .brand-subtitle {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .live-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #6ee7b7;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse 1.8s infinite;
+    }
+
+    .live-indicator.disconnected {
+      background: rgba(245, 158, 11, 0.15);
+      border-color: rgba(245, 158, 11, 0.4);
+      color: #fcd34d;
+    }
+
+    .live-indicator.disconnected .live-dot {
+      background: #f59e0b;
+      box-shadow: none;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.3); opacity: 0.65; }
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 13px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.15s ease;
+    }
+
+    .btn:hover {
+      background: var(--bg-card-elevated);
+      border-color: #475569;
+    }
+
+    .btn-primary {
+      background: var(--navya-pill);
+      border-color: var(--navya-light);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #4338ca;
+    }
+
+    .btn-emerald {
+      background: var(--kul-pill);
+      border-color: var(--kul-light);
+      color: #fff;
+    }
+
+    .btn-emerald:hover {
+      background: #047857;
+    }
+
+    .btn-amber {
+      background: rgba(245, 158, 11, 0.18);
+      border-color: rgba(245, 158, 11, 0.45);
+      color: #fcd34d;
+    }
+
+    .btn-amber:hover {
+      background: rgba(245, 158, 11, 0.28);
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1360px;
+      margin: 24px auto 0;
+      padding: 0 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    /* Top Dashboard Grid */
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 1024px) {
+      .hero-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    /* Live Hero Card */
+    .live-hero {
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .live-hero.owner-navya {
+      background: linear-gradient(135deg, rgba(79, 70, 229, 0.28) 0%, var(--bg-card) 65%);
+      border-color: var(--navya-border);
+    }
+
+    .live-hero.owner-kulwinder {
+      background: linear-gradient(135deg, rgba(5, 150, 105, 0.28) 0%, var(--bg-card) 65%);
+      border-color: var(--kul-border);
+    }
+
+    .hero-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .eyebrow {
+      font-size: 11.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .current-holder-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .holder-name {
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+    }
+
+    .owner-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12.5px;
+      font-weight: 700;
+      padding: 4px 11px;
+      border-radius: 999px;
+    }
+
+    .owner-pill.navya {
+      background: var(--navya-bg);
+      color: #a5b4fc;
+      border: 1px solid var(--navya-border);
+    }
+
+    .owner-pill.kulwinder {
+      background: var(--kul-bg);
+      color: #6ee7b7;
+      border: 1px solid var(--kul-border);
+    }
+
+    .swap-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--swap-bg);
+      color: #fcd34d;
+      border: 1px solid rgba(245, 158, 11, 0.45);
+    }
+
+    .clock-box {
+      text-align: right;
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid var(--border);
+      padding: 10px 14px;
+      border-radius: 10px;
+    }
+
+    .clock-time {
+      font-size: 19px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .clock-date {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* Countdown & Next Up Strip */
+    .hero-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    @media (max-width: 680px) {
+      .hero-stats {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .stat-tile {
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 14px;
+    }
+
+    .stat-label {
+      font-size: 11.5px;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 15.5px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stat-sub {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Immediate 14-day two-week strip */
+    .two-week-strip {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      padding-top: 6px;
+    }
+
+    @media (max-width: 720px) {
+      .two-week-strip {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .mini-week-box {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+
+    .mini-week-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-secondary);
+    }
+
+    .mini-days-row {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+    }
+
+    .mini-day {
+      border-radius: 7px;
+      padding: 6px 2px;
+      text-align: center;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: transform 0.12s ease, border-color 0.12s ease;
+      position: relative;
+    }
+
+    .mini-day:hover {
+      transform: translateY(-2px);
+      border-color: #fff;
+    }
+
+    .mini-day.navya {
+      background: var(--navya-bg);
+      border-color: var(--navya-border);
+      color: #c7d2fe;
+    }
+
+    .mini-day.kulwinder {
+      background: var(--kul-bg);
+      border-color: var(--kul-border);
+      color: #a7f3d0;
+    }
+
+    .mini-day.is-today {
+      outline: 2px solid #f8fafc;
+      outline-offset: 1px;
+      font-weight: 800;
+    }
+
+    .mini-day .dow {
+      font-size: 10px;
+      opacity: 0.78;
+      display: block;
+    }
+
+    .mini-day .dom {
+      font-size: 13px;
+      font-weight: 700;
+      display: block;
+    }
+
+    .mini-day .who {
+      font-size: 9.5px;
+      font-weight: 700;
+      display: block;
+      margin-top: 1px;
+    }
+
+    .mini-day .swap-dot {
+      position: absolute;
+      top: 3px;
+      right: 3px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--swap-amber);
+    }
+
+    /* Fairness & Balance Card */
+    .fairness-card {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .balance-banner {
+      padding: 13px 16px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .balance-banner.balanced {
+      background: rgba(16, 185, 129, 0.14);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: #6ee7b7;
+    }
+
+    .balance-banner.unbalanced {
+      background: rgba(245, 158, 11, 0.16);
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      color: #fde68a;
+    }
+
+    .share-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .person-stat-row {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .person-stat-top {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .progress-track {
+      height: 10px;
+      background: var(--bg-muted);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .progress-fill {
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.3s ease;
+    }
+
+    .progress-fill.navya {
+      background: linear-gradient(90deg, #4f46e5, #818cf8);
+    }
+
+    .progress-fill.kulwinder {
+      background: linear-gradient(90deg, #059669, #34d399);
+    }
+
+    .fairness-metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .metric-mini {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 9px 12px;
+      font-size: 12px;
+    }
+
+    .metric-mini strong {
+      display: block;
+      font-size: 15px;
+      margin-top: 2px;
+      color: var(--text);
+    }
+
+    /* Navigation Tabs & Controls Bar */
+    .controls-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+    }
+
+    .view-tabs {
+      display: flex;
+      gap: 6px;
+      background: var(--bg-muted);
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+
+    .tab-btn {
+      padding: 8px 15px;
+      border-radius: 7px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .tab-btn.active {
+      background: var(--bg-card-elevated);
+      color: var(--text);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+
+    .legend {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+      font-size: 12.5px;
+      color: var(--text-secondary);
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .swatch {
+      width: 13px;
+      height: 13px;
+      border-radius: 4px;
+      display: inline-block;
+    }
+
+    .swatch.navya {
+      background: var(--navya-primary);
+    }
+
+    .swatch.kulwinder {
+      background: var(--kul-primary);
+    }
+
+    .swatch.swapped {
+      background: var(--swap-amber);
+    }
+
+    /* Month Selector Pills */
+    .month-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .month-pill {
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 600;
+      background: var(--bg-muted);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .month-pill:hover {
+      color: var(--text);
+      border-color: #475569;
+    }
+
+    .month-pill.active {
+      background: var(--navya-pill);
+      border-color: var(--navya-light);
+      color: #fff;
+    }
+
+    /* Calendar Grid */
+    .months-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 22px;
+    }
+
+    .months-container.all-months-grid {
+      grid-template-columns: repeat(auto-fill, minmax(390px, 1fr));
+    }
+
+    .month-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .month-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .month-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .month-summary {
+      font-size: 12px;
+      color: var(--text-secondary);
+      display: flex;
+      gap: 10px;
+    }
+
+    .cal-weekdays {
+      display: grid;
+      grid-template-columns: 44px repeat(7, 1fr);
+      gap: 6px;
+      margin-bottom: 6px;
+      text-align: center;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+    }
+
+    .cal-row {
+      display: grid;
+      grid-template-columns: 44px repeat(7, 1fr);
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .week-badge-cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-muted);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 10.5px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 4px 2px;
+      transition: all 0.15s ease;
+    }
+
+    .week-badge-cell:hover {
+      border-color: var(--swap-amber);
+      color: #fde68a;
+    }
+
+    .cal-cell {
+      min-height: 76px;
+      border-radius: 9px;
+      padding: 7px 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      border: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.45);
+      cursor: pointer;
+      position: relative;
+      transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+    }
+
+    .all-months-grid .cal-cell {
+      min-height: 58px;
+      padding: 5px 6px;
+    }
+
+    .cal-cell:hover {
+      transform: translateY(-2px);
+      border-color: #f8fafc;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+    }
+
+    .cal-cell.empty {
+      background: transparent;
+      border-color: transparent;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .cal-cell.out-of-range {
+      opacity: 0.28;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .cal-cell.owner-navya {
+      background: var(--navya-bg);
+      border-color: var(--navya-border);
+    }
+
+    .cal-cell.owner-kulwinder {
+      background: var(--kul-bg);
+      border-color: var(--kul-border);
+    }
+
+    .cal-cell.is-today {
+      outline: 2.5px solid #ffffff;
+      outline-offset: 1px;
+      box-shadow: 0 0 16px rgba(255, 255, 255, 0.25);
+    }
+
+    .cal-cell.is-overridden {
+      border-style: dashed;
+      border-width: 1.5px;
+      border-color: var(--swap-amber);
+    }
+
+    .cell-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .cell-day-num {
+      font-size: 13.5px;
+      font-weight: 700;
+    }
+
+    .today-tag {
+      font-size: 9.5px;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: 4px;
+      background: #fff;
+      color: #0f172a;
+      text-transform: uppercase;
+    }
+
+    .swap-flag {
+      font-size: 10px;
+      font-weight: 700;
+      color: #fcd34d;
+      background: rgba(245, 158, 11, 0.2);
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+
+    .cell-owner {
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .all-months-grid .cell-owner {
+      font-size: 10.5px;
+    }
+
+    .owner-navya .cell-owner {
+      color: #c7d2fe;
+    }
+
+    .owner-kulwinder .cell-owner {
+      color: #a7f3d0;
+    }
+
+    .cell-note {
+      font-size: 10.5px;
+      color: #fde68a;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 2px;
+    }
+
+    /* Weekly Rotation Table View */
+    .weeks-table-wrap {
+      overflow-x: auto;
+    }
+
+    table.weeks-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+    }
+
+    table.weeks-table th,
+    table.weeks-table td {
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    table.weeks-table th {
+      font-size: 11.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-secondary);
+      background: var(--bg-muted);
+    }
+
+    table.weeks-table tr.current-week-row {
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    table.weeks-table tr:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    /* Swap History Feed */
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 420px;
+      overflow-y: auto;
+    }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 14px;
+      background: var(--bg-muted);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 13px;
+    }
+
+    .history-time {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    /* Modal Dialog */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.75);
+      backdrop-filter: blur(5px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      max-width: 480px;
+      width: 100%;
+      padding: 24px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .form-input, .form-select {
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-muted);
+      color: var(--text);
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    .owner-choice-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .owner-choice-btn {
+      padding: 12px;
+      border-radius: 10px;
+      border: 2px solid var(--border);
+      background: var(--bg-muted);
+      color: var(--text);
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .owner-choice-btn.selected-navya {
+      border-color: var(--navya-light);
+      background: var(--navya-bg);
+      color: #c7d2fe;
+    }
+
+    .owner-choice-btn.selected-kulwinder {
+      border-color: var(--kul-light);
+      background: var(--kul-bg);
+      color: #a7f3d0;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding-top: 6px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 120;
+      background: #1e293b;
+      border: 1px solid var(--navya-light);
+      color: var(--text);
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 600;
+      box-shadow: var(--shadow);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.25s ease;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation & Export Bar -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-icon">🚗</div>
+        <div>
+          <div class="brand-title">
+            <span>Parking Spot Rotation</span>
+            <span class="spot-badge" id="spotLabelBadge" title="Click to rename parking spot">Shared Parking Spot ✎</span>
+          </div>
+          <div class="brand-subtitle">
+            Weekly Monday–Sunday Schedule • Nov 9, 2026 – Aug 31, 2027 • Navya &amp; Kulwinder
+          </div>
+        </div>
+      </div>
+
+      <div class="topbar-actions">
+        <div class="live-indicator" id="sseStatusBadge">
+          <span class="live-dot"></span>
+          <span id="sseStatusText">LIVE REAL-TIME SYNC</span>
+        </div>
+        <button class="btn btn-emerald" id="shareSyncLinkBtn" title="Copy a shareable link with all current swaps for Kulwinder">🔗 Share Link with Kulwinder</button>
+        <button class="btn btn-amber" id="openTradeModalBtn">⇄ 1-for-1 Day Trade</button>
+        <a class="btn btn-primary" id="exportAllIcsBtn" href="/api/calendar.ics?owner=all" download>📅 Export Full .ics</a>
+        <a class="btn" id="exportNavyaIcsBtn" href="/api/calendar.ics?owner=Navya" download>📅 Navya .ics</a>
+        <a class="btn" id="exportKulIcsBtn" href="/api/calendar.ics?owner=Kulwinder" download>📅 Kulwinder .ics</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Hero Row: Live Real-Time Tracker + Fairness Ledger -->
+    <section class="hero-grid">
+      <!-- Left: Who Has the Spot Right Now -->
+      <div class="card live-hero owner-navya" id="liveHeroCard">
+        <div class="hero-top">
+          <div>
+            <div class="eyebrow" id="liveStatusEyebrow">🟢 ACTIVE RIGHT NOW • ROTATION WEEK #1</div>
+            <div class="current-holder-row">
+              <span class="holder-name" id="currentHolderName">Navya</span>
+              <span class="owner-pill navya" id="currentHolderPill">Has the Parking Spot Today</span>
+              <span class="swap-pill" id="todaySwappedBadge" style="display: none;">⚡ Swapped Day</span>
+            </div>
+            <div style="font-size: 13px; color: var(--text-secondary); margin-top: 6px;" id="todaySubtext">
+              This Week (Mon Nov 9 – Sun Nov 15, 2026) • Next Week: Kulwinder
+            </div>
+          </div>
+
+          <div class="clock-box">
+            <div class="clock-time" id="liveClockTime">--:--:--</div>
+            <div class="clock-date" id="liveClockDate">Loading date...</div>
+          </div>
+        </div>
+
+        <div class="hero-stats">
+          <div class="stat-tile">
+            <div class="stat-label">Next Handoff Countdown</div>
+            <div class="stat-value" id="handoffCountdown">--d --h --m --s</div>
+            <div class="stat-sub" id="handoffSubtext">Until Kulwinder takes over</div>
+          </div>
+          <div class="stat-tile">
+            <div class="stat-label">Current Rotation Week</div>
+            <div class="stat-value" id="currentWeekRange">Nov 9 – Nov 15</div>
+            <div class="stat-sub" id="currentWeekMeta">Week 1 of 43 (Baseline: Navya)</div>
+          </div>
+          <div class="stat-tile">
+            <div class="stat-label">Next Week Up</div>
+            <div class="stat-value" id="nextWeekHolder">Kulwinder</div>
+            <div class="stat-sub" id="nextWeekRange">Nov 16 – Nov 22, 2026</div>
+          </div>
+        </div>
+
+        <!-- Immediate 14-Day Strip (This Week & Next Week) -->
+        <div class="two-week-strip">
+          <div class="mini-week-box">
+            <div class="mini-week-header">
+              <span id="thisWeekStripTitle">THIS WEEK (WK #1)</span>
+              <span style="font-size: 11px; opacity: 0.8;">Click any day to swap</span>
+            </div>
+            <div class="mini-days-row" id="thisWeekMiniDays"></div>
+          </div>
+          <div class="mini-week-box">
+            <div class="mini-week-header">
+              <span id="nextWeekStripTitle">NEXT WEEK (WK #2)</span>
+              <span style="font-size: 11px; opacity: 0.8;">Click any day to swap</span>
+            </div>
+            <div class="mini-days-row" id="nextWeekMiniDays"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: Fairness & Swap Balance Counter -->
+      <div class="card fairness-card">
+        <div>
+          <div class="card-header">
+            <div class="card-title">⚖️ Fairness &amp; Swap Balance Tracker</div>
+            <button class="btn" id="resetAllBtn" style="padding: 5px 10px; font-size: 11.5px;">Reset All Swaps</button>
+          </div>
+          <p style="font-size: 12.5px; color: var(--text-secondary); margin-top: 4px;">
+            Tracks all day/week overrides through Aug 31, 2027 so spot sharing stays 100% fair.
+          </p>
+        </div>
+
+        <div class="balance-banner balanced" id="balanceBanner">
+          <span id="balanceStatusText">All swaps are evenly balanced (0 days owed)</span>
+          <span id="balanceDeltaBadge" style="font-size: 12px; opacity: 0.9;">Net: 0</span>
+        </div>
+
+        <div class="share-bars">
+          <div class="person-stat-row">
+            <div class="person-stat-top">
+              <span style="color: #a5b4fc;">● Navya</span>
+              <span id="navyaDaysSummary">154 days (110 weekdays)</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill navya" id="navyaProgressBar" style="width: 52%;"></div>
+            </div>
+          </div>
+
+          <div class="person-stat-row">
+            <div class="person-stat-top">
+              <span style="color: #6ee7b7;">● Kulwinder</span>
+              <span id="kulwinderDaysSummary">142 days (102 weekdays)</span>
+            </div>
+            <div class="progress-track">
+              <div class="progress-fill kulwinder" id="kulwinderProgressBar" style="width: 48%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="fairness-metrics-grid">
+          <div class="metric-mini">
+            <span style="color: var(--text-secondary);">Active Day Overrides</span>
+            <strong id="totalOverridesMetric">0 days modified</strong>
+          </div>
+          <div class="metric-mini">
+            <span style="color: var(--text-secondary);">Schedule Horizon</span>
+            <strong id="horizonMetric">296 days (43 weeks)</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- View Switcher & Legend -->
+    <section class="controls-bar">
+      <div class="view-tabs">
+        <button class="tab-btn active" data-view="month-single">📅 Monthly Calendar</button>
+        <button class="tab-btn" data-view="month-all">🗓️ Full 10-Month Overview</button>
+        <button class="tab-btn" data-view="weeks-table">📋 43-Week Rotation Table</button>
+        <button class="tab-btn" data-view="history">🕒 Swap History (<span id="historyCountBadge">0</span>)</button>
+      </div>
+
+      <div class="legend">
+        <span class="legend-item"><span class="swatch navya"></span> Navya's Spot</span>
+        <span class="legend-item"><span class="swatch kulwinder"></span> Kulwinder's Spot</span>
+        <span class="legend-item"><span class="swatch swapped"></span> Dashed Amber = Swapped/Overridden</span>
+        <span style="font-size: 12px; color: var(--text-muted);">Tip: Click any day cell or week badge to override</span>
+      </div>
+    </section>
+
+    <!-- Month Selector Pills (Visible in Single Month View) -->
+    <div id="monthPillsContainer" class="month-pills"></div>
+
+    <!-- Calendar View Container -->
+    <section id="calendarSection" class="months-container"></section>
+
+    <!-- 43-Week Table View Container -->
+    <section id="weeksTableSection" class="card" style="display: none;">
+      <div class="card-header" style="margin-bottom: 14px;">
+        <div class="card-title">📋 Complete Weekly Rotation Schedule (Nov 9, 2026 – Aug 31, 2027)</div>
+      </div>
+      <div class="weeks-table-wrap">
+        <table class="weeks-table">
+          <thead>
+            <tr>
+              <th>Week</th>
+              <th>Date Range (Mon – Sun)</th>
+              <th>Baseline Holder</th>
+              <th>Effective Holder</th>
+              <th>Day Split</th>
+              <th>Quick Action</th>
+            </tr>
+          </thead>
+          <tbody id="weeksTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Swap History Section -->
+    <section id="historySection" class="card" style="display: none;">
+      <div class="card-header" style="margin-bottom: 14px;">
+        <div class="card-title">🕒 Real-Time Swap &amp; Override Audit Log</div>
+      </div>
+      <div class="history-list" id="historyListContainer"></div>
+    </section>
+  </main>
+
+  <!-- Day Override & Note Modal -->
+  <div class="modal-backdrop" id="dayModalBackdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <div class="eyebrow" id="modalDayWeekLabel">ROTATION WEEK #1</div>
+          <div class="modal-title" id="modalDayTitle">Tuesday, Nov 10, 2026</div>
+        </div>
+        <button class="modal-close" id="closeDayModalBtn">&times;</button>
+      </div>
+
+      <div style="font-size: 13px; color: var(--text-secondary);" id="modalBaselineInfo">
+        Baseline weekly rotation owner: <strong>Navya</strong>
+      </div>
+
+      <div class="form-group">
+        <label>Who gets the parking spot on this date?</label>
+        <div class="owner-choice-grid">
+          <button type="button" class="owner-choice-btn" id="chooseNavyaBtn">🚗 Navya</button>
+          <button type="button" class="owner-choice-btn" id="chooseKulwinderBtn">🚗 Kulwinder</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="dayNoteInput">Optional Swap Note / Reason</label>
+        <input
+          type="text"
+          id="dayNoteInput"
+          class="form-input"
+          placeholder="e.g., Traded Thursday for Friday, WFH, Out of town..."
+        />
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn" id="resetDayBtn">Reset to Baseline</button>
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn" id="cancelDayModalBtn">Cancel</button>
+          <button type="button" class="btn btn-primary" id="saveDayModalBtn">Save Day Assignment</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1-for-1 Day Trade Modal -->
+  <div class="modal-backdrop" id="tradeModalBackdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <div class="eyebrow">KEEP FAIRNESS BALANCE EVEN</div>
+          <div class="modal-title">⇄ 1-for-1 Day Trade</div>
+        </div>
+        <button class="modal-close" id="closeTradeModalBtn">&times;</button>
+      </div>
+
+      <p style="font-size: 13px; color: var(--text-secondary);">
+        Select two dates to swap between Navya and Kulwinder so neither person owes a day.
+      </p>
+
+      <div class="form-group">
+        <label for="tradeDateA">First Date (e.g., Navya's Day → Kulwinder)</label>
+        <input type="date" id="tradeDateA" class="form-input" min="2026-11-09" max="2027-08-31" />
+      </div>
+
+      <div class="form-group">
+        <label for="tradeDateB">Second Date (e.g., Kulwinder's Day → Navya)</label>
+        <input type="date" id="tradeDateB" class="form-input" min="2026-11-09" max="2027-08-31" />
+      </div>
+
+      <div class="form-group">
+        <label for="tradeNoteInput">Trade Note (Optional)</label>
+        <input type="text" id="tradeNoteInput" class="form-input" placeholder="e.g., Swapped Tue Nov 10 for Thu Nov 19" />
+      </div>
+
+      <div class="modal-footer" style="justify-content: flex-end;">
+        <button type="button" class="btn" id="cancelTradeModalBtn">Cancel</button>
+        <button type="button" class="btn btn-primary" id="confirmTradeBtn">Execute 1-for-1 Trade</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toastEl">Schedule updated</div>
+
+  <script>
+    const MONTHS = [
+      { year: 2026, month: 11, label: "Nov 2026", full: "November 2026" },
+      { year: 2026, month: 12, label: "Dec 2026", full: "December 2026" },
+      { year: 2027, month: 1,  label: "Jan 2027", full: "January 2027" },
+      { year: 2027, month: 2,  label: "Feb 2027", full: "February 2027" },
+      { year: 2027, month: 3,  label: "Mar 2027", full: "March 2027" },
+      { year: 2027, month: 4,  label: "Apr 2027", full: "April 2027" },
+      { year: 2027, month: 5,  label: "May 2027", full: "May 2027" },
+      { year: 2027, month: 6,  label: "Jun 2027", full: "June 2027" },
+      { year: 2027, month: 7,  label: "Jul 2027", full: "July 2027" },
+      { year: 2027, month: 8,  label: "Aug 2027", full: "August 2027" }
+    ];
+
+    let appState = null;
+    let currentView = "month-single";
+    let selectedMonthIdx = 0;
+    let activeModalDay = null;
+    let selectedModalOwner = "Navya";
+    let isStandaloneMode = false;
+
+    const LOCAL_STORAGE_KEY = "parking_rotation_navya_kulwinder_v1";
+
+    function loadLocalData() {
+      try {
+        const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (raw) return JSON.parse(raw);
+      } catch (e) {}
+      return { spot_label: "Shared Parking Spot", overrides: {}, history: [] };
+    }
+
+    function saveLocalData(data) {
+      try {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+      } catch (e) {}
+    }
+
+    function computeStandaloneState() {
+      const store = loadLocalData();
+      const start = new Date(2026, 10, 9);
+      const end = new Date(2027, 7, 31);
+      const weekdayShortNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      const days = [];
+      const weeksMap = {};
+      const baselineCounts = { Navya: 0, Kulwinder: 0 };
+      const effectiveCounts = { Navya: 0, Kulwinder: 0 };
+      const weekdayBaseline = { Navya: 0, Kulwinder: 0 };
+      const weekdayEffective = { Navya: 0, Kulwinder: 0 };
+      let navTook = 0;
+      let kulTook = 0;
+
+      let cur = new Date(start);
+      let dayIdx = 0;
+      while (cur <= end) {
+        const y = cur.getFullYear();
+        const m = cur.getMonth() + 1;
+        const d = cur.getDate();
+        const iso = `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+        const wkIdx = Math.floor(dayIdx / 7);
+        const wkNum = wkIdx + 1;
+        const baseOwner = wkIdx % 2 === 0 ? "Navya" : "Kulwinder";
+        const ov = store.overrides[iso];
+        const effOwner = ov ? ov.override_owner : baseOwner;
+        const isOverridden = effOwner !== baseOwner;
+        const note = ov ? (ov.note || "") : "";
+        const jsDow = cur.getDay();
+        const monDow = (jsDow + 6) % 7;
+
+        baselineCounts[baseOwner]++;
+        effectiveCounts[effOwner]++;
+        if (monDow < 5) {
+          weekdayBaseline[baseOwner]++;
+          weekdayEffective[effOwner]++;
+        }
+        if (isOverridden) {
+          if (baseOwner === "Kulwinder" && effOwner === "Navya") navTook++;
+          if (baseOwner === "Navya" && effOwner === "Kulwinder") kulTook++;
+        }
+
+        const entry = {
+          date: iso,
+          Year: y,
+          month: m,
+          day: d,
+          weekday: monDow,
+          weekday_short: weekdayShortNames[jsDow],
+          week_number: wkNum,
+          baseline_owner: baseOwner,
+          effective_owner: effOwner,
+          is_overridden: isOverridden,
+          has_note: Boolean(note),
+          note
+        };
+        days.push(entry);
+
+        if (!weeksMap[wkNum]) {
+          const monDate = new Date(start);
+          monDate.setDate(start.getDate() + wkIdx * 7);
+          const sunDate = new Date(monDate);
+          sunDate.setDate(monDate.getDate() + 6);
+          const clippedSun = sunDate > end ? end : sunDate;
+          const fmt = (dtObj) => dtObj.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
+          const toIso = (dtObj) => `${dtObj.getFullYear()}-${String(dtObj.getMonth() + 1).padStart(2, "0")}-${String(dtObj.getDate()).padStart(2, "0")}`;
+          weeksMap[wkNum] = {
+            week_number: wkNum,
+            start_date: toIso(monDate),
+            end_date: toIso(clippedSun),
+            label: `${fmt(monDate)} – ${fmt(clippedSun)}`,
+            baseline_owner: baseOwner,
+            days: [],
+            override_count: 0
+          };
+        }
+        weeksMap[wkNum].days.push(entry);
+        if (isOverridden) weeksMap[wkNum].override_count++;
+
+        cur.setDate(cur.getDate() + 1);
+        dayIdx++;
+      }
+
+      Object.values(weeksMap).forEach(w => {
+        const navD = w.days.filter(x => x.effective_owner === "Navya").length;
+        const kulD = w.days.filter(x => x.effective_owner === "Kulwinder").length;
+        w.navya_days = navD;
+        w.kulwinder_days = kulD;
+        w.dominant_owner = navD === w.days.length ? "Navya" : (kulD === w.days.length ? "Kulwinder" : "Split");
+      });
+
+      const netOwedToNavya = kulTook - navTook;
+      let balanceStatus = "All swaps are evenly balanced (0 days owed)";
+      let owedDays = 0;
+      if (netOwedToNavya > 0) {
+        owedDays = netOwedToNavya;
+        balanceStatus = `Kulwinder owes Navya ${owedDays} day${owedDays === 1 ? "" : "s"}`;
+      } else if (netOwedToNavya < 0) {
+        owedDays = Math.abs(netOwedToNavya);
+        balanceStatus = `Navya owes Kulwinder ${owedDays} day${owedDays === 1 ? "" : "s"}`;
+      }
+
+      const now = new Date();
+      const nowIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+      const refIso = (nowIso >= "2026-11-09" && nowIso <= "2027-08-31") ? nowIso : "2026-11-10";
+      const todayEntry = days.find(x => x.date === refIso) || days[1];
+      const currentWeek = weeksMap[todayEntry.week_number];
+      const nextWeek = weeksMap[todayEntry.week_number + 1] || null;
+      const nextHandoff = days.find(x => x.date > refIso && x.effective_owner !== todayEntry.effective_owner) || null;
+
+      return {
+        schedule_meta: {
+          start_date: "2026-11-09",
+          end_date: "2027-08-31",
+          total_days: days.length,
+          total_weeks: Object.keys(weeksMap).length,
+          settings: { spot_label: store.spot_label || "Shared Parking Spot" }
+        },
+        live_status: {
+          reference_date: refIso,
+          today: todayEntry,
+          current_week: currentWeek,
+          next_week: nextWeek,
+          next_handoff: nextHandoff
+        },
+        fairness: {
+          baseline_days: baselineCounts,
+          effective_days: effectiveCounts,
+          weekday_baseline_days: weekdayBaseline,
+          weekday_effective_days: weekdayEffective,
+          total_overridden_days: navTook + kulTook,
+          owed_days: owedDays,
+          balance_status: balanceStatus
+        },
+        weeks: Object.values(weeksMap),
+        days,
+        history: store.history || []
+      };
+    }
+
+    function showToast(msg) {
+      const el = document.getElementById("toastEl");
+      el.textContent = msg;
+      el.classList.add("show");
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => el.classList.remove("show"), 3200);
+    }
+
+    function formatShortDate(iso) {
+      const [y, m, d] = iso.split("-").map(Number);
+      const dateObj = new Date(y, m - 1, d);
+      return dateObj.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    }
+
+    function formatFullDate(iso) {
+      const [y, m, d] = iso.split("-").map(Number);
+      const dateObj = new Date(y, m - 1, d);
+      return dateObj.toLocaleDateString("en-US", {
+        weekday: "long",
+        month: "short",
+        day: "numeric",
+        year: "numeric"
+      });
+    }
+
+    async function fetchSchedule() {
+      try {
+        const res = await fetch("/api/schedule");
+        if (!res.ok) throw new Error("HTTP error");
+        appState = await res.json();
+        isStandaloneMode = false;
+      } catch (e) {
+        isStandaloneMode = true;
+        appState = computeStandaloneState();
+      }
+      renderAll();
+    }
+
+    function renderAll() {
+      if (!appState) return;
+      renderTopBar();
+      renderHero();
+      renderFairness();
+      renderMonthPills();
+      renderCalendarSection();
+      renderWeeksTable();
+      renderHistory();
+    }
+
+    function renderTopBar() {
+      const spotLabel = appState.schedule_meta.settings.spot_label || "Shared Parking Spot";
+      document.getElementById("spotLabelBadge").textContent = `${spotLabel} ✎`;
+    }
+
+    function renderHero() {
+      const live = appState.live_status;
+      const today = live.today;
+      const curWeek = live.current_week;
+      const nextWeek = live.next_week;
+      const owner = today.effective_owner;
+
+      const heroCard = document.getElementById("liveHeroCard");
+      heroCard.className = `card live-hero owner-${owner.toLowerCase()}`;
+
+      document.getElementById("liveStatusEyebrow").textContent =
+        `🟢 ACTIVE RIGHT NOW • ROTATION WEEK #${curWeek.week_number} (${today.date})`;
+
+      document.getElementById("currentHolderName").textContent = owner;
+      const pill = document.getElementById("currentHolderPill");
+      pill.className = `owner-pill ${owner.toLowerCase()}`;
+      pill.textContent = `${owner} has the parking spot today`;
+
+      const swapBadge = document.getElementById("todaySwappedBadge");
+      if (today.is_overridden) {
+        swapBadge.style.display = "inline-flex";
+        swapBadge.textContent = `⚡ Swapped (Baseline: ${today.baseline_owner})`;
+      } else {
+        swapBadge.style.display = "none";
+      }
+
+      const nextInfo = nextWeek
+        ? `Next Week (Wk #${nextWeek.week_number}): ${nextWeek.dominant_owner === "Split" ? `${nextWeek.baseline_owner} (Split)` : nextWeek.dominant_owner}`
+        : "Final week of schedule";
+      document.getElementById("todaySubtext").textContent =
+        `Current Week: ${curWeek.label} • ${nextInfo}`;
+
+      document.getElementById("currentWeekRange").textContent =
+        `${formatShortDate(curWeek.start_date)} – ${formatShortDate(curWeek.end_date)}`;
+      document.getElementById("currentWeekMeta").textContent =
+        `Week ${curWeek.week_number} of ${appState.schedule_meta.total_weeks} (Baseline: ${curWeek.baseline_owner})`;
+
+      if (nextWeek) {
+        document.getElementById("nextWeekHolder").textContent =
+          nextWeek.dominant_owner === "Split" ? `${nextWeek.baseline_owner} (Split)` : nextWeek.dominant_owner;
+        document.getElementById("nextWeekRange").textContent = nextWeek.label;
+      } else {
+        document.getElementById("nextWeekHolder").textContent = "Schedule Complete";
+        document.getElementById("nextWeekRange").textContent = "Ends Aug 31, 2027";
+      }
+
+      // Render 7-day strips for This Week and Next Week
+      document.getElementById("thisWeekStripTitle").textContent =
+        `THIS WEEK (WK #${curWeek.week_number}: ${curWeek.baseline_owner.toUpperCase()})`;
+      renderMiniDays("thisWeekMiniDays", curWeek.days, today.date);
+
+      if (nextWeek) {
+        document.getElementById("nextWeekStripTitle").textContent =
+          `NEXT WEEK (WK #${nextWeek.week_number}: ${nextWeek.baseline_owner.toUpperCase()})`;
+        renderMiniDays("nextWeekMiniDays", nextWeek.days, today.date);
+      }
+    }
+
+    function renderMiniDays(containerId, daysList, todayIso) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = "";
+      daysList.forEach(d => {
+        const el = document.createElement("div");
+        const isToday = d.date === todayIso;
+        el.className = `mini-day ${d.effective_owner.toLowerCase()} ${isToday ? "is-today" : ""}`;
+        el.title = `${formatFullDate(d.date)}: ${d.effective_owner}${d.note ? " (" + d.note + ")" : ""}`;
+        el.innerHTML = `
+          ${d.is_overridden ? '<span class="swap-dot"></span>' : ""}
+          <span class="dow">${d.weekday_short}</span>
+          <span class="dom">${d.day}</span>
+          <span class="who">${d.effective_owner.slice(0, 3)}</span>
+        `;
+        el.addEventListener("click", () => openDayModal(d.date));
+        container.appendChild(el);
+      });
+    }
+
+    function renderFairness() {
+      const f = appState.fairness;
+      const total = appState.schedule_meta.total_days;
+      const banner = document.getElementById("balanceBanner");
+      const statusText = document.getElementById("balanceStatusText");
+      const deltaBadge = document.getElementById("balanceDeltaBadge");
+
+      statusText.textContent = f.balance_status;
+      if (f.owed_days === 0) {
+        banner.className = "balance-banner balanced";
+        deltaBadge.textContent = "✓ 0 Days Owed";
+      } else {
+        banner.className = "balance-banner unbalanced";
+        deltaBadge.textContent = `${f.owed_days}d Imbalance`;
+      }
+
+      const navDays = f.effective_days.Navya;
+      const kulDays = f.effective_days.Kulwinder;
+      const navPct = ((navDays / total) * 100).toFixed(1);
+      const kulPct = ((kulDays / total) * 100).toFixed(1);
+
+      document.getElementById("navyaDaysSummary").textContent =
+        `${navDays} total days (${f.weekday_effective_days.Navya} weekdays) • ${navPct}%`;
+      document.getElementById("kulwinderDaysSummary").textContent =
+        `${kulDays} total days (${f.weekday_effective_days.Kulwinder} weekdays) • ${kulPct}%`;
+
+      document.getElementById("navyaProgressBar").style.width = `${navPct}%`;
+      document.getElementById("kulwinderProgressBar").style.width = `${kulPct}%`;
+
+      document.getElementById("totalOverridesMetric").textContent =
+        `${f.total_overridden_days} day${f.total_overridden_days === 1 ? "" : "s"} swapped`;
+      document.getElementById("horizonMetric").textContent =
+        `${total} days (${appState.schedule_meta.total_weeks} weeks)`;
+    }
+
+    function renderMonthPills() {
+      const container = document.getElementById("monthPillsContainer");
+      if (currentView !== "month-single") {
+        container.style.display = "none";
+        return;
+      }
+      container.style.display = "flex";
+      container.innerHTML = "";
+
+      MONTHS.forEach((m, idx) => {
+        const btn = document.createElement("button");
+        btn.className = `month-pill ${idx === selectedMonthIdx ? "active" : ""}`;
+        btn.textContent = m.label;
+        btn.addEventListener("click", () => {
+          selectedMonthIdx = idx;
+          renderMonthPills();
+          renderCalendarSection();
+        });
+        container.appendChild(btn);
+      });
+    }
+
+    function renderCalendarSection() {
+      const calSec = document.getElementById("calendarSection");
+      const weeksSec = document.getElementById("weeksTableSection");
+      const histSec = document.getElementById("historySection");
+
+      if (currentView === "weeks-table") {
+        calSec.style.display = "none";
+        weeksSec.style.display = "block";
+        histSec.style.display = "none";
+        return;
+      }
+      if (currentView === "history") {
+        calSec.style.display = "none";
+        weeksSec.style.display = "none";
+        histSec.style.display = "block";
+        return;
+      }
+
+      weeksSec.style.display = "none";
+      histSec.style.display = "none";
+      calSec.style.display = "grid";
+
+      if (currentView === "month-all") {
+        calSec.classList.add("all-months-grid");
+        calSec.innerHTML = "";
+        MONTHS.forEach(m => {
+          calSec.appendChild(buildMonthCard(m));
+        });
+      } else {
+        calSec.classList.remove("all-months-grid");
+        calSec.innerHTML = "";
+        calSec.appendChild(buildMonthCard(MONTHS[selectedMonthIdx]));
+      }
+    }
+
+    function buildMonthCard(monthSpec) {
+      const { year, month, full } = monthSpec;
+      const daysMap = {};
+      let navMonthCount = 0;
+      let kulMonthCount = 0;
+
+      appState.days.forEach(d => {
+        daysMap[d.date] = d;
+        if (d.Year === year && d.month === month) {
+          if (d.effective_owner === "Navya") navMonthCount++;
+          else kulMonthCount++;
+        }
+      });
+
+      const card = document.createElement("div");
+      card.className = "month-card";
+
+      const header = document.createElement("div");
+      header.className = "month-header";
+      header.innerHTML = `
+        <div class="month-title">${full}</div>
+        <div class="month-summary">
+          <span style="color:#a5b4fc;font-weight:600;">Navya: ${navMonthCount}d</span>
+          <span style="color:#6ee7b7;font-weight:600;">Kulwinder: ${kulMonthCount}d</span>
+        </div>
+      `;
+      card.appendChild(header);
+
+      const weekdaysHeader = document.createElement("div");
+      weekdaysHeader.className = "cal-weekdays";
+      weekdaysHeader.innerHTML = `
+        <div>Wk</div>
+        <div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div><div>Sun</div>
+      `;
+      card.appendChild(weekdaysHeader);
+
+      const firstDay = new Date(year, month - 1, 1);
+      const lastDay = new Date(year, month, 0);
+      const totalDaysInMonth = lastDay.getDate();
+      // Convert JS Sunday=0..Saturday=6 to Monday=0..Sunday=6
+      const startOffset = (firstDay.getDay() + 6) % 7;
+
+      let cells = [];
+      for (let i = 0; i < startOffset; i++) {
+        cells.push(null);
+      }
+      for (let dayNum = 1; dayNum <= totalDaysInMonth; dayNum++) {
+        const iso = `${year}-${String(month).padStart(2, "0")}-${String(dayNum).padStart(2, "0")}`;
+        cells.push({ dayNum, iso, entry: daysMap[iso] || null });
+      }
+      while (cells.length % 7 !== 0) {
+        cells.push(null);
+      }
+
+      const todayIso = appState.live_status.today.date;
+
+      for (let r = 0; r < cells.length / 7; r++) {
+        const rowSlice = cells.slice(r * 7, r * 7 + 7);
+        const rowEl = document.createElement("div");
+        rowEl.className = "cal-row";
+
+        // Determine week number from first in-range day in this row
+        const firstActive = rowSlice.find(c => c && c.entry);
+        const wkCell = document.createElement("div");
+        wkCell.className = "week-badge-cell";
+        if (firstActive) {
+          const wkNum = firstActive.entry.week_number;
+          wkCell.innerHTML = `<span>W${wkNum}</span><span style="font-size:9px;opacity:0.75;">⇄</span>`;
+          wkCell.title = `Click to swap or reset entire Rotation Week #${wkNum}`;
+          wkCell.addEventListener("click", () => quickToggleWeek(wkNum));
+        } else {
+          wkCell.textContent = "—";
+        }
+        rowEl.appendChild(wkCell);
+
+        rowSlice.forEach(cellData => {
+          const cellEl = document.createElement("div");
+          if (!cellData) {
+            cellEl.className = "cal-cell empty";
+            rowEl.appendChild(cellEl);
+            return;
+          }
+          if (!cellData.entry) {
+            cellEl.className = "cal-cell out-of-range";
+            cellEl.innerHTML = `<div class="cell-top"><span class="cell-day-num">${cellData.dayNum}</span></div>`;
+            rowEl.appendChild(cellEl);
+            return;
+          }
+
+          const e = cellData.entry;
+          const isToday = e.date === todayIso;
+          cellEl.className = [
+            "cal-cell",
+            `owner-${e.effective_owner.toLowerCase()}`,
+            isToday ? "is-today" : "",
+            e.is_overridden ? "is-overridden" : ""
+          ].filter(Boolean).join(" ");
+
+          cellEl.innerHTML = `
+            <div class="cell-top">
+              <span class="cell-day-num">${cellData.dayNum}</span>
+              ${isToday ? '<span class="today-tag">Today</span>' : (e.is_overridden ? '<span class="swap-flag">Swap</span>' : '')}
+            </div>
+            <div>
+              <div class="cell-owner">🚗 ${e.effective_owner}</div>
+              ${e.note ? `<div class="cell-note" title="${e.note}">💬 ${e.note}</div>` : ""}
+            </div>
+          `;
+          cellEl.addEventListener("click", () => openDayModal(e.date));
+          rowEl.appendChild(cellEl);
+        });
+
+        card.appendChild(rowEl);
+      }
+
+      return card;
+    }
+
+    function renderWeeksTable() {
+      const tbody = document.getElementById("weeksTableBody");
+      tbody.innerHTML = "";
+      const curWkNum = appState.live_status.current_week.week_number;
+
+      appState.weeks.forEach(w => {
+        const tr = document.createElement("tr");
+        if (w.week_number === curWkNum) {
+          tr.className = "current-week-row";
+        }
+
+        const basePill = `<span class="owner-pill ${w.baseline_owner.toLowerCase()}">${w.baseline_owner}</span>`;
+        let effPill = "";
+        if (w.dominant_owner === "Split") {
+          effPill = `<span class="swap-pill">⚡ Split Week (N:${w.navya_days} / K:${w.kulwinder_days})</span>`;
+        } else {
+          effPill = `<span class="owner-pill ${w.dominant_owner.toLowerCase()}">${w.dominant_owner}</span>`;
+          if (w.dominant_owner !== w.baseline_owner) {
+            effPill += ` <span class="swap-pill">Swapped</span>`;
+          }
+        }
+
+        tr.innerHTML = `
+          <td><strong>Week #${w.week_number}</strong> ${w.week_number === curWkNum ? '<span class="today-tag" style="margin-left:6px;">Current</span>' : ''}</td>
+          <td>${w.label}</td>
+          <td>${basePill}</td>
+          <td>${effPill}</td>
+          <td style="font-size:12.5px; color:var(--text-secondary);">Navya: ${w.navya_days}d • Kulwinder: ${w.kulwinder_days}d</td>
+          <td>
+            <div style="display:flex; gap:6px;">
+              <button class="btn" style="padding:5px 10px; font-size:12px;" data-swap-week="${w.week_number}">⇄ Swap Week</button>
+              ${w.override_count > 0 ? `<button class="btn" style="padding:5px 10px; font-size:12px;" data-reset-week="${w.week_number}">↺ Reset</button>` : ""}
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      tbody.querySelectorAll("[data-swap-week]").forEach(btn => {
+        btn.addEventListener("click", () => quickToggleWeek(Number(btn.dataset.swapWeek)));
+      });
+      tbody.querySelectorAll("[data-reset-week]").forEach(btn => {
+        btn.addEventListener("click", () => resetWeek(Number(btn.dataset.resetWeek)));
+      });
+    }
+
+    function renderHistory() {
+      const list = document.getElementById("historyListContainer");
+      const badge = document.getElementById("historyCountBadge");
+      const history = appState.history || [];
+      badge.textContent = history.length;
+
+      if (history.length === 0) {
+        list.innerHTML = `<div style="color:var(--text-secondary);font-size:13.5px;padding:12px;">No swaps or overrides recorded yet. The schedule is currently following the baseline Monday–Sunday weekly rotation.</div>`;
+        return;
+      }
+
+      list.innerHTML = "";
+      history.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "history-item";
+        div.innerHTML = `
+          <div><strong>${item.summary}</strong></div>
+          <div class="history-time">${item.created_at}</div>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    // Day Override Modal Actions
+    function openDayModal(dateIso) {
+      const entry = appState.days.find(d => d.date === dateIso);
+      if (!entry) return;
+      activeModalDay = entry;
+      selectedModalOwner = entry.effective_owner;
+
+      document.getElementById("modalDayWeekLabel").textContent =
+        `ROTATION WEEK #${entry.week_number} • ${entry.date}`;
+      document.getElementById("modalDayTitle").textContent = formatFullDate(entry.date);
+      document.getElementById("modalBaselineInfo").innerHTML =
+        `Baseline weekly rotation owner: <strong>${entry.baseline_owner}</strong>`;
+      document.getElementById("dayNoteInput").value = entry.note || "";
+
+      updateModalOwnerButtons();
+      document.getElementById("dayModalBackdrop").classList.add("open");
+    }
+
+    function updateModalOwnerButtons() {
+      const navBtn = document.getElementById("chooseNavyaBtn");
+      const kulBtn = document.getElementById("chooseKulwinderBtn");
+      navBtn.className = `owner-choice-btn ${selectedModalOwner === "Navya" ? "selected-navya" : ""}`;
+      kulBtn.className = `owner-choice-btn ${selectedModalOwner === "Kulwinder" ? "selected-kulwinder" : ""}`;
+    }
+
+    function closeDayModal() {
+      document.getElementById("dayModalBackdrop").classList.remove("open");
+      activeModalDay = null;
+    }
+
+    async function saveDayModal(ownerOverride) {
+      if (!activeModalDay) return;
+      const note = document.getElementById("dayNoteInput").value.trim();
+      if (isStandaloneMode) {
+        const store = loadLocalData();
+        const targetOwner = ownerOverride === "reset" ? activeModalDay.baseline_owner : ownerOverride;
+        if (targetOwner === activeModalDay.baseline_owner && !note) {
+          delete store.overrides[activeModalDay.date];
+        } else {
+          store.overrides[activeModalDay.date] = { override_owner: targetOwner, note: ownerOverride === "reset" ? "" : note };
+        }
+        const summary = ownerOverride === "reset"
+          ? `Reset ${activeModalDay.date} to baseline (${activeModalDay.baseline_owner})`
+          : `Assigned ${activeModalDay.date} to ${targetOwner}${note ? " — “" + note + "”" : ""}`;
+        store.history.unshift({ summary, created_at: new Date().toLocaleString() });
+        saveLocalData(store);
+        appState = computeStandaloneState();
+        renderAll();
+        showToast(summary);
+        closeDayModal();
+        return;
+      }
+      const res = await fetch("/api/override-day", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          date: activeModalDay.date,
+          owner: ownerOverride,
+          note: ownerOverride === "reset" ? "" : note
+        })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        appState = data.state;
+        renderAll();
+        showToast(data.summary);
+        closeDayModal();
+      } else {
+        showToast(data.error || "Failed to update day");
+      }
+    }
+
+    async function quickToggleWeek(weekNumber) {
+      const wk = appState.weeks.find(w => w.week_number === weekNumber);
+      if (!wk) return;
+      const nextOwner = wk.dominant_owner === "Navya" ? "Kulwinder" : "Navya";
+      if (isStandaloneMode) {
+        const store = loadLocalData();
+        wk.days.forEach(d => {
+          if (nextOwner === d.baseline_owner) delete store.overrides[d.date];
+          else store.overrides[d.date] = { override_owner: nextOwner, note: `Week #${weekNumber} swap` };
+        });
+        const summary = `Assigned Week #${weekNumber} (${wk.label}) to ${nextOwner}`;
+        store.history.unshift({ summary, created_at: new Date().toLocaleString() });
+        saveLocalData(store);
+        appState = computeStandaloneState();
+        renderAll();
+        showToast(summary);
+        return;
+      }
+      const res = await fetch("/api/swap-week", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          week_number: weekNumber,
+          mode: "swap",
+          target_owner: nextOwner,
+          note: `Swapped Week #${weekNumber} to ${nextOwner}`
+        })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        appState = data.state;
+        renderAll();
+        showToast(data.summary);
+      }
+    }
+
+    async function resetWeek(weekNumber) {
+      if (isStandaloneMode) {
+        const wk = appState.weeks.find(w => w.week_number === weekNumber);
+        if (!wk) return;
+        const store = loadLocalData();
+        wk.days.forEach(d => delete store.overrides[d.date]);
+        const summary = `Reset Week #${weekNumber} (${wk.label}) to baseline (${wk.baseline_owner})`;
+        store.history.unshift({ summary, created_at: new Date().toLocaleString() });
+        saveLocalData(store);
+        appState = computeStandaloneState();
+        renderAll();
+        showToast(summary);
+        return;
+      }
+      const res = await fetch("/api/swap-week", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          week_number: weekNumber,
+          mode: "reset"
+        })
+      });
+      const data = await res.json();
+      if (data.ok) {
+        appState = data.state;
+        renderAll();
+        showToast(data.summary);
+      }
+    }
+
+    // Real-time live clock and handoff countdown
+    function updateLiveClock() {
+      const realNow = new Date();
+      let effectiveNow = realNow;
+      if (appState && appState.live_status && appState.live_status.reference_date) {
+        const [ry, rm, rd] = appState.live_status.reference_date.split("-").map(Number);
+        const schedStart = new Date(2026, 10, 9, 0, 0, 0);
+        if (realNow < schedStart) {
+          effectiveNow = new Date(
+            ry,
+            rm - 1,
+            rd,
+            realNow.getHours(),
+            realNow.getMinutes(),
+            realNow.getSeconds()
+          );
+        }
+      }
+
+      document.getElementById("liveClockTime").textContent = effectiveNow.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+      });
+      document.getElementById("liveClockDate").textContent = effectiveNow.toLocaleDateString("en-US", {
+        weekday: "short",
+        month: "short",
+        day: "numeric",
+        year: "numeric"
+      });
+
+      if (appState && appState.live_status && appState.live_status.next_handoff) {
+        const handoff = appState.live_status.next_handoff;
+        const [hy, hm, hd] = handoff.date.split("-").map(Number);
+        const handoffTime = new Date(hy, hm - 1, hd, 0, 0, 0);
+        const diffMs = handoffTime - effectiveNow;
+
+        if (diffMs > 0) {
+          const totalSec = Math.floor(diffMs / 1000);
+          const days = Math.floor(totalSec / 86400);
+          const hours = Math.floor((totalSec % 86400) / 3600);
+          const mins = Math.floor((totalSec % 3600) / 60);
+          const secs = totalSec % 60;
+          document.getElementById("handoffCountdown").textContent =
+            `${days}d ${hours}h ${mins}m ${secs}s`;
+          document.getElementById("handoffSubtext").textContent =
+            `Handoff to ${handoff.effective_owner} on ${formatShortDate(handoff.date)} (12:00 AM)`;
+        } else {
+          document.getElementById("handoffCountdown").textContent = "Handoff Active";
+        }
+      }
+    }
+
+    // Server-Sent Events (SSE) Real-Time Stream
+    function connectSSE() {
+      const badge = document.getElementById("sseStatusBadge");
+      const text = document.getElementById("sseStatusText");
+      const es = new EventSource("/api/stream");
+
+      es.addEventListener("connected", () => {
+        badge.classList.remove("disconnected");
+        text.textContent = "LIVE REAL-TIME SYNC";
+      });
+
+      es.addEventListener("schedule_updated", (ev) => {
+        fetchSchedule();
+      });
+
+      es.onerror = () => {
+        badge.classList.add("disconnected");
+        text.textContent = "RECONNECTING...";
+      };
+    }
+
+    function importSharedUrlStateIfPresent() {
+      try {
+        const hash = window.location.hash || "";
+        if (!hash.startsWith("#sync=")) return null;
+        const encoded = decodeURIComponent(hash.slice(6));
+        const decoded = JSON.parse(atob(encoded));
+        if (decoded && typeof decoded === "object") {
+          const store = loadLocalData();
+          if (decoded.spot_label) store.spot_label = decoded.spot_label;
+          if (decoded.overrides && typeof decoded.overrides === "object") {
+            store.overrides = { ...store.overrides, ...decoded.overrides };
+          }
+          saveLocalData(store);
+          return decoded;
+        }
+      } catch (e) {}
+      return null;
+    }
+
+    function generateShareableSyncUrl() {
+      const overrides = {};
+      if (appState && appState.days) {
+        appState.days.forEach(d => {
+          if (d.is_overridden || d.note) {
+            overrides[d.date] = { override_owner: d.effective_owner, note: d.note || "" };
+          }
+        });
+      }
+      const payload = {
+        spot_label: appState?.schedule_meta?.settings?.spot_label || "Shared Parking Spot",
+        overrides
+      };
+      const encoded = btoa(JSON.stringify(payload));
+      const baseUrl = window.location.href.split("#")[0];
+      return `${baseUrl}#sync=${encodeURIComponent(encoded)}`;
+    }
+
+    function downloadClientSideIcs(ownerFilter) {
+      if (!appState) return;
+      const spotLabel = appState.schedule_meta.settings.spot_label || "Shared Parking Spot";
+      const filtered = appState.days.filter(
+        d => ownerFilter === "all" || d.effective_owner.toLowerCase() === ownerFilter.toLowerCase()
+      );
+      const lines = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//Navya & Kulwinder//Parking Spot Rotation//EN",
+        "CALSCALE:GREGORIAN",
+        "METHOD:PUBLISH",
+        `X-WR-CALNAME:Parking Rotation (${spotLabel})`
+      ];
+      filtered.forEach((d, idx) => {
+        const dtstart = d.date.replace(/-/g, "");
+        const [y, m, dayNum] = d.date.split("-").map(Number);
+        const nextD = new Date(y, m - 1, dayNum + 1);
+        const dtend = `${nextD.getFullYear()}${String(nextD.getMonth() + 1).padStart(2, "0")}${String(nextD.getDate()).padStart(2, "0")}`;
+        const swapTag = d.is_overridden ? " [SWAPPED]" : "";
+        lines.push(
+          "BEGIN:VEVENT",
+          `UID:parking-${dtstart}-${idx}@parking.local`,
+          `DTSTART;VALUE=DATE:${dtstart}`,
+          `DTEND;VALUE=DATE:${dtend}`,
+          `SUMMARY:🚗 Parking: ${d.effective_owner}${swapTag} (${spotLabel})`,
+          `DESCRIPTION:Holder: ${d.effective_owner} | Week #${d.week_number}${d.note ? " | Note: " + d.note : ""}`,
+          "END:VEVENT"
+        );
+      });
+      lines.push("END:VCALENDAR");
+      const blob = new Blob([lines.join("\r\n") + "\r\n"], { type: "text/calendar;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `parking_rotation_${ownerFilter.toLowerCase()}_2026_2027.ics`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    // Wire up UI event listeners
+    document.addEventListener("DOMContentLoaded", () => {
+      importSharedUrlStateIfPresent();
+      fetchSchedule();
+      connectSSE();
+      updateLiveClock();
+      setInterval(updateLiveClock, 1000);
+
+      // Share Sync Link button
+      document.getElementById("shareSyncLinkBtn").addEventListener("click", async () => {
+        const shareUrl = generateShareableSyncUrl();
+        try {
+          await navigator.clipboard.writeText(shareUrl);
+          showToast("🔗 Copied shareable sync link! Send it to Kulwinder to share all current swaps.");
+        } catch (e) {
+          prompt("Copy this shareable link for Kulwinder:", shareUrl);
+        }
+      });
+
+      // Intercept .ics buttons when running in standalone/GitHub Pages mode
+      [
+        ["exportAllIcsBtn", "all"],
+        ["exportNavyaIcsBtn", "Navya"],
+        ["exportKulIcsBtn", "Kulwinder"]
+      ].forEach(([btnId, filter]) => {
+        document.getElementById(btnId).addEventListener("click", (ev) => {
+          if (isStandaloneMode) {
+            ev.preventDefault();
+            downloadClientSideIcs(filter);
+          }
+        });
+      });
+
+      // View Tabs
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          currentView = btn.dataset.view;
+          renderMonthPills();
+          renderCalendarSection();
+        });
+      });
+
+      // Day Modal buttons
+      document.getElementById("chooseNavyaBtn").addEventListener("click", () => {
+        selectedModalOwner = "Navya";
+        updateModalOwnerButtons();
+      });
+      document.getElementById("chooseKulwinderBtn").addEventListener("click", () => {
+        selectedModalOwner = "Kulwinder";
+        updateModalOwnerButtons();
+      });
+      document.getElementById("closeDayModalBtn").addEventListener("click", closeDayModal);
+      document.getElementById("cancelDayModalBtn").addEventListener("click", closeDayModal);
+      document.getElementById("saveDayModalBtn").addEventListener("click", () => saveDayModal(selectedModalOwner));
+      document.getElementById("resetDayBtn").addEventListener("click", () => saveDayModal("reset"));
+
+      // Trade Modal buttons
+      const tradeBackdrop = document.getElementById("tradeModalBackdrop");
+      document.getElementById("openTradeModalBtn").addEventListener("click", () => {
+        document.getElementById("tradeDateA").value = appState ? appState.live_status.today.date : "2026-11-10";
+        document.getElementById("tradeDateB").value = "2026-11-17";
+        document.getElementById("tradeNoteInput").value = "";
+        tradeBackdrop.classList.add("open");
+      });
+      document.getElementById("closeTradeModalBtn").addEventListener("click", () => tradeBackdrop.classList.remove("open"));
+      document.getElementById("cancelTradeModalBtn").addEventListener("click", () => tradeBackdrop.classList.remove("open"));
+      document.getElementById("confirmTradeBtn").addEventListener("click", async () => {
+        const dateA = document.getElementById("tradeDateA").value;
+        const dateB = document.getElementById("tradeDateB").value;
+        const note = document.getElementById("tradeNoteInput").value.trim();
+        if (isStandaloneMode) {
+          if (!dateA || !dateB || dateA === dateB) {
+            showToast("Please select two different dates to trade.");
+            return;
+          }
+          const entryA = appState.days.find(d => d.date === dateA);
+          const entryB = appState.days.find(d => d.date === dateB);
+          if (!entryA || !entryB) {
+            showToast("Dates must be between Nov 9, 2026 and Aug 31, 2027.");
+            return;
+          }
+          const newA = entryA.effective_owner !== entryB.effective_owner ? entryB.effective_owner : (entryA.effective_owner === "Navya" ? "Kulwinder" : "Navya");
+          const newB = entryA.effective_owner !== entryB.effective_owner ? entryA.effective_owner : (newA === "Kulwinder" ? "Navya" : "Kulwinder");
+          const tradeNote = note || `1:1 Trade (${dateA} ↔ ${dateB})`;
+          const store = loadLocalData();
+          store.overrides[dateA] = { override_owner: newA, note: tradeNote };
+          store.overrides[dateB] = { override_owner: newB, note: tradeNote };
+          const summary = `Traded ${dateA} (→ ${newA}) ↔ ${dateB} (→ ${newB})`;
+          store.history.unshift({ summary, created_at: new Date().toLocaleString() });
+          saveLocalData(store);
+          appState = computeStandaloneState();
+          renderAll();
+          showToast(summary);
+          tradeBackdrop.classList.remove("open");
+          return;
+        }
+        const res = await fetch("/api/trade-days", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ date_a: dateA, date_b: dateB, note })
+        });
+        const data = await res.json();
+        if (data.ok) {
+          appState = data.state;
+          renderAll();
+          showToast(data.summary);
+          tradeBackdrop.classList.remove("open");
+        } else {
+          showToast(data.error || "Trade failed");
+        }
+      });
+
+      // Rename Spot Label
+      document.getElementById("spotLabelBadge").addEventListener("click", async () => {
+        const current = appState?.schedule_meta?.settings?.spot_label || "Shared Parking Spot";
+        const nextLabel = prompt("Enter a name or number for your shared parking spot:", current);
+        if (nextLabel && nextLabel.trim()) {
+          if (isStandaloneMode) {
+            const store = loadLocalData();
+            store.spot_label = nextLabel.trim();
+            saveLocalData(store);
+            appState = computeStandaloneState();
+            renderAll();
+            showToast(`Updated spot name to "${nextLabel.trim()}"`);
+            return;
+          }
+          const res = await fetch("/api/settings", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ spot_label: nextLabel.trim() })
+          });
+          const data = await res.json();
+          if (data.ok) {
+            appState = data.state;
+            renderAll();
+            showToast(`Updated spot name to "${nextLabel.trim()}"`);
+          }
+        }
+      });
+
+      // Reset All Swaps
+      document.getElementById("resetAllBtn").addEventListener("click", async () => {
+        if (!appState || appState.fairness.total_overridden_days === 0) {
+          showToast("Schedule is already at baseline (no swaps to reset).");
+          return;
+        }
+        if (isStandaloneMode) {
+          const store = loadLocalData();
+          store.overrides = {};
+          store.history.unshift({ summary: "Reset all overrides to baseline weekly rotation", created_at: new Date().toLocaleString() });
+          saveLocalData(store);
+          appState = computeStandaloneState();
+          renderAll();
+          showToast("Reset all overrides back to baseline weekly rotation.");
+          return;
+        }
+        const res = await fetch("/api/reset-all", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({})
+        });
+        const data = await res.json();
+        if (data.ok) {
+          appState = data.state;
+          renderAll();
+          showToast("Reset all overrides back to baseline weekly rotation.");
+        }
+      });
+    });
+  </script>
+</body>
+</html>

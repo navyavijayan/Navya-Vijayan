@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: parking-spot-rotation
+    runtime: python
+    buildCommand: ""
+    startCommand: python3 server.py
+    envVars:
+      - key: PORT
+        value: 8765

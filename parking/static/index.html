@@ -878,6 +878,34 @@
       border-radius: 4px;
     }
 
+    .donation-flag {
+      font-size: 10px;
+      font-weight: 700;
+      color: #f9a8d4;
+      background: rgba(236, 72, 153, 0.22);
+      border: 1px solid rgba(244, 114, 182, 0.45);
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+
+    .cal-cell.is-donated {
+      border-style: dashed;
+      border-width: 1.5px;
+      border-color: #f472b6;
+    }
+
+    .owner-choice-btn.selected-swap {
+      border-color: var(--swap-amber);
+      background: rgba(245, 158, 11, 0.16);
+      color: #fde68a;
+    }
+
+    .owner-choice-btn.selected-donation {
+      border-color: #f472b6;
+      background: rgba(236, 72, 153, 0.18);
+      color: #fbcfe8;
+    }
+
     .cell-owner {
       font-size: 12px;
       font-weight: 700;
@@ -1267,8 +1295,8 @@
       <div class="legend">
         <span class="legend-item"><span class="swatch navya"></span> Navya's Spot</span>
         <span class="legend-item"><span class="swatch kulwinder"></span> Kulwinder's Spot</span>
-        <span class="legend-item"><span class="swatch swapped"></span> Dashed Amber = Swapped/Overridden</span>
-        <span style="font-size: 12px; color: var(--text-muted);">Tip: Click any day cell or week badge to override</span>
+        <span class="legend-item"><span class="swatch swapped"></span> Swapped (Owed Back)</span>
+        <span class="legend-item"><span class="swatch" style="background:#f472b6;"></span> 🎁 Donated (Not a Swap)</span>
       </div>
     </section>
 
@@ -1332,8 +1360,22 @@
         </div>
       </div>
 
+      <div class="form-group" id="overrideTypeGroup">
+        <label>Is this a Swap or a Donation (Free Gift)?</label>
+        <div class="owner-choice-grid">
+          <button type="button" class="owner-choice-btn selected-swap" id="chooseSwapTypeBtn">
+            <div>⚡ Swap Day</div>
+            <div style="font-size: 11px; font-weight: 500; opacity: 0.85; margin-top: 2px;">Counts toward owed days</div>
+          </button>
+          <button type="button" class="owner-choice-btn" id="chooseDonationTypeBtn">
+            <div>🎁 Donation (Not a Swap)</div>
+            <div style="font-size: 11px; font-weight: 500; opacity: 0.85; margin-top: 2px;">Free gift — 0 days owed back</div>
+          </button>
+        </div>
+      </div>
+
       <div class="form-group">
-        <label for="dayNoteInput">Optional Swap Note / Reason</label>
+        <label for="dayNoteInput">Optional Note / Reason</label>
         <input
           type="text"
           id="dayNoteInput"
@@ -1410,6 +1452,7 @@
     let selectedMonthIdx = 0;
     let activeModalDay = null;
     let selectedModalOwner = "Navya";
+    let selectedModalOverrideType = "swap";
     let isStandaloneMode = false;
 
     const LOCAL_STORAGE_KEY = "parking_rotation_navya_kulwinder_v1";
@@ -1561,6 +1604,8 @@
       const weekdayEffective = { Navya: 0, Kulwinder: 0 };
       let navTook = 0;
       let kulTook = 0;
+      let navDonated = 0;
+      let kulDonated = 0;
 
       let cur = new Date(start);
       let dayIdx = 0;
@@ -1575,6 +1620,7 @@
         const ov = store.overrides[iso];
         const effOwner = ov ? ov.override_owner : baseOwner;
         const isOverridden = effOwner !== baseOwner;
+        const ovType = ov ? (ov.override_type || "swap") : "swap";
         const note = ov ? (ov.note || "") : "";
         const jsDow = cur.getDay();
         const monDow = (jsDow + 6) % 7;
@@ -1586,8 +1632,13 @@
           weekdayEffective[effOwner]++;
         }
         if (isOverridden) {
-          if (baseOwner === "Kulwinder" && effOwner === "Navya") navTook++;
-          if (baseOwner === "Navya" && effOwner === "Kulwinder") kulTook++;
+          if (ovType === "donation") {
+            if (baseOwner === "Navya" && effOwner === "Kulwinder") navDonated++;
+            if (baseOwner === "Kulwinder" && effOwner === "Navya") kulDonated++;
+          } else {
+            if (baseOwner === "Kulwinder" && effOwner === "Navya") navTook++;
+            if (baseOwner === "Navya" && effOwner === "Kulwinder") kulTook++;
+          }
         }
 
         const entry = {
@@ -1601,6 +1652,7 @@
           baseline_owner: baseOwner,
           effective_owner: effOwner,
           is_overridden: isOverridden,
+          override_type: isOverridden ? ovType : null,
           has_note: Boolean(note),
           note
         };
@@ -1678,7 +1730,9 @@
           effective_days: effectiveCounts,
           weekday_baseline_days: weekdayBaseline,
           weekday_effective_days: weekdayEffective,
-          total_overridden_days: navTook + kulTook,
+          total_overridden_days: navTook + kulTook + navDonated + kulDonated,
+          total_swapped_days: navTook + kulTook,
+          total_donated_days: navDonated + kulDonated,
           owed_days: owedDays,
           balance_status: balanceStatus
         },
@@ -1788,7 +1842,11 @@
       const swapBadge = document.getElementById("todaySwappedBadge");
       if (today.is_overridden) {
         swapBadge.style.display = "inline-flex";
-        swapBadge.textContent = `⚡ Swapped (Baseline: ${today.baseline_owner})`;
+        if (today.override_type === "donation") {
+          swapBadge.textContent = `🎁 Donated (Baseline: ${today.baseline_owner})`;
+        } else {
+          swapBadge.textContent = `⚡ Swapped (Baseline: ${today.baseline_owner})`;
+        }
       } else {
         swapBadge.style.display = "none";
       }
@@ -1873,8 +1931,10 @@
       document.getElementById("navyaProgressBar").style.width = `${navPct}%`;
       document.getElementById("kulwinderProgressBar").style.width = `${kulPct}%`;
 
+      const swapCount = f.total_swapped_days !== undefined ? f.total_swapped_days : f.total_overridden_days;
+      const donatedCount = f.total_donated_days || 0;
       document.getElementById("totalOverridesMetric").textContent =
-        `${f.total_overridden_days} day${f.total_overridden_days === 1 ? "" : "s"} swapped`;
+        `${swapCount} swapped • ${donatedCount} donated`;
       document.getElementById("horizonMetric").textContent =
         `${total} days (${appState.schedule_meta.total_weeks} weeks)`;
     }
@@ -2027,18 +2087,26 @@
 
           const e = cellData.entry;
           const isToday = e.date === todayIso;
+          const isDonation = e.is_overridden && e.override_type === "donation";
           cellEl.className = [
             "cal-cell",
             `owner-${e.effective_owner.toLowerCase()}`,
             isToday ? "is-today" : "",
-            e.is_overridden ? "is-overridden" : ""
+            isDonation ? "is-donated" : (e.is_overridden ? "is-overridden" : "")
           ].filter(Boolean).join(" ");
 
-          cellEl.title = `${formatFullDate(e.date)} — ${e.effective_owner}${e.note ? "\nNote: " + e.note : ""}`;
+          const tagHtml = isToday
+            ? '<span class="today-tag">Today</span>'
+            : (isDonation
+                ? '<span class="donation-flag">🎁 Donated</span>'
+                : (e.is_overridden ? '<span class="swap-flag">Swap</span>' : ''));
+
+          const typeLabel = isDonation ? " [Donated - Not a Swap]" : (e.is_overridden ? " [Swapped]" : "");
+          cellEl.title = `${formatFullDate(e.date)} — ${e.effective_owner}${typeLabel}${e.note ? "\nNote: " + e.note : ""}`;
           cellEl.innerHTML = `
             <div class="cell-top">
               <span class="cell-day-num">${cellData.dayNum}</span>
-              ${isToday ? '<span class="today-tag">Today</span>' : (e.is_overridden ? '<span class="swap-flag">Swap</span>' : '')}
+              ${tagHtml}
             </div>
             <div class="cell-bottom">
               <div class="cell-owner">🚗 ${e.effective_owner}</div>
@@ -2130,6 +2198,7 @@
       if (!entry) return;
       activeModalDay = entry;
       selectedModalOwner = entry.effective_owner;
+      selectedModalOverrideType = entry.override_type || "swap";
 
       document.getElementById("modalDayWeekLabel").textContent =
         `ROTATION WEEK #${entry.week_number} • ${entry.date}`;
@@ -2139,6 +2208,7 @@
       document.getElementById("dayNoteInput").value = entry.note || "";
 
       updateModalOwnerButtons();
+      updateModalTypeButtons();
       document.getElementById("dayModalBackdrop").classList.add("open");
     }
 
@@ -2147,6 +2217,14 @@
       const kulBtn = document.getElementById("chooseKulwinderBtn");
       navBtn.className = `owner-choice-btn ${selectedModalOwner === "Navya" ? "selected-navya" : ""}`;
       kulBtn.className = `owner-choice-btn ${selectedModalOwner === "Kulwinder" ? "selected-kulwinder" : ""}`;
+    }
+
+    function updateModalTypeButtons() {
+      const swapBtn = document.getElementById("chooseSwapTypeBtn");
+      const donBtn = document.getElementById("chooseDonationTypeBtn");
+      if (!swapBtn || !donBtn) return;
+      swapBtn.className = `owner-choice-btn ${selectedModalOverrideType === "swap" ? "selected-swap" : ""}`;
+      donBtn.className = `owner-choice-btn ${selectedModalOverrideType === "donation" ? "selected-donation" : ""}`;
     }
 
     function closeDayModal() {
@@ -2160,14 +2238,20 @@
       if (isStandaloneMode) {
         const store = loadLocalData();
         const targetOwner = ownerOverride === "reset" ? activeModalDay.baseline_owner : ownerOverride;
+        const ovType = selectedModalOverrideType || "swap";
         if (targetOwner === activeModalDay.baseline_owner && !note) {
           delete store.overrides[activeModalDay.date];
         } else {
-          store.overrides[activeModalDay.date] = { override_owner: targetOwner, note: ownerOverride === "reset" ? "" : note };
+          store.overrides[activeModalDay.date] = {
+            override_owner: targetOwner,
+            override_type: targetOwner === activeModalDay.baseline_owner ? "swap" : ovType,
+            note: ownerOverride === "reset" ? "" : note
+          };
         }
+        const actionWord = ovType === "donation" ? "Donated (Free Gift)" : "Swapped";
         const summary = ownerOverride === "reset"
           ? `Reset ${activeModalDay.date} to baseline (${activeModalDay.baseline_owner})`
-          : `Assigned ${activeModalDay.date} to ${targetOwner}${note ? " — “" + note + "”" : ""}`;
+          : `${actionWord}: ${activeModalDay.date} → ${targetOwner}${note ? " — “" + note + "”" : ""}`;
         store.history.unshift({ summary, created_at: new Date().toLocaleString() });
         saveLocalData(store);
         appState = computeStandaloneState();
@@ -2182,6 +2266,7 @@
         body: JSON.stringify({
           date: activeModalDay.date,
           owner: ownerOverride,
+          override_type: selectedModalOverrideType || "swap",
           note: ownerOverride === "reset" ? "" : note
         })
       });
@@ -2365,7 +2450,11 @@
       if (appState && appState.days) {
         appState.days.forEach(d => {
           if (d.is_overridden || d.note) {
-            overrides[d.date] = { override_owner: d.effective_owner, note: d.note || "" };
+            overrides[d.date] = {
+              override_owner: d.effective_owner,
+              override_type: d.override_type || "swap",
+              note: d.note || ""
+            };
           }
         });
       }
@@ -2397,7 +2486,7 @@
         const [y, m, dayNum] = d.date.split("-").map(Number);
         const nextD = new Date(y, m - 1, dayNum + 1);
         const dtend = `${nextD.getFullYear()}${String(nextD.getMonth() + 1).padStart(2, "0")}${String(nextD.getDate()).padStart(2, "0")}`;
-        const swapTag = d.is_overridden ? " [SWAPPED]" : "";
+        const swapTag = d.is_overridden ? (d.override_type === "donation" ? " [DONATED]" : " [SWAPPED]") : "";
         lines.push(
           "BEGIN:VEVENT",
           `UID:parking-${dtstart}-${idx}@parking.local`,
@@ -2471,6 +2560,14 @@
       document.getElementById("chooseKulwinderBtn").addEventListener("click", () => {
         selectedModalOwner = "Kulwinder";
         updateModalOwnerButtons();
+      });
+      document.getElementById("chooseSwapTypeBtn").addEventListener("click", () => {
+        selectedModalOverrideType = "swap";
+        updateModalTypeButtons();
+      });
+      document.getElementById("chooseDonationTypeBtn").addEventListener("click", () => {
+        selectedModalOverrideType = "donation";
+        updateModalTypeButtons();
       });
       document.getElementById("closeDayModalBtn").addEventListener("click", closeDayModal);
       document.getElementById("cancelDayModalBtn").addEventListener("click", closeDayModal);

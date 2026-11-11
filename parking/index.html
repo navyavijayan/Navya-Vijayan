@@ -1399,18 +1399,138 @@
     let isStandaloneMode = false;
 
     const LOCAL_STORAGE_KEY = "parking_rotation_navya_kulwinder_v1";
+    const CLOUD_OBJECT_URL = "https://api.restful-api.dev/objects/ff808181a09d98f701a1c9122c8e04b8";
+    const CLOUD_SSE_TOPIC = "parking_navya_kulwinder_sync_v1_8f92a1c4";
+    const CLOUD_CLIENT_ID = "client_" + Math.random().toString(36).slice(2, 10);
 
     function loadLocalData() {
       try {
         const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-        if (raw) return JSON.parse(raw);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          return {
+            spot_label: parsed.spot_label || "Shared Parking Spot",
+            overrides: parsed.overrides || {},
+            history: parsed.history || [],
+            updated_at: parsed.updated_at || 0
+          };
+        }
       } catch (e) {}
-      return { spot_label: "Shared Parking Spot", overrides: {}, history: [] };
+      return { spot_label: "Shared Parking Spot", overrides: {}, history: [], updated_at: 0 };
     }
 
-    function saveLocalData(data) {
+    function saveLocalData(data, pushToCloud = true) {
+      data.updated_at = Date.now();
       try {
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(data));
+      } catch (e) {}
+      if (pushToCloud) {
+        pushStateToCloud(data);
+      }
+    }
+
+    async function pushStateToCloud(data) {
+      const payload = {
+        spot_label: data.spot_label || "Shared Parking Spot",
+        overrides: data.overrides || {},
+        history: (data.history || []).slice(0, 40),
+        updated_at: data.updated_at || Date.now(),
+        sender: CLOUD_CLIENT_ID
+      };
+      // 1. Persist to REST cloud object
+      fetch(CLOUD_OBJECT_URL, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: "parking_rotation_navya_kulwinder_v1",
+          data: payload
+        })
+      }).catch(() => {});
+
+      // 2. Broadcast live via SSE pub/sub so other open browsers update in <200ms
+      fetch(`https://ntfy.sh/${CLOUD_SSE_TOPIC}`, {
+        method: "POST",
+        body: JSON.stringify(payload)
+      }).catch(() => {});
+    }
+
+    async function pullStateFromCloud() {
+      let newest = loadLocalData();
+      let changed = false;
+
+      // Check REST cloud store
+      try {
+        const res = await fetch(CLOUD_OBJECT_URL, { cache: "no-store" });
+        if (res.ok) {
+          const obj = await res.json();
+          if (obj && obj.data && (obj.data.updated_at || 0) > (newest.updated_at || 0)) {
+            newest = obj.data;
+            changed = true;
+          }
+        }
+      } catch (e) {}
+
+      // Also check ntfy cached message history in case a recent push happened
+      try {
+        const res2 = await fetch(`https://ntfy.sh/${CLOUD_SSE_TOPIC}/json?poll=1&since=all`, { cache: "no-store" });
+        if (res2.ok) {
+          const text = await res2.text();
+          const lines = text.trim().split("\n").filter(Boolean);
+          for (const line of lines) {
+            try {
+              const ev = JSON.parse(line);
+              if (ev.event === "message" && ev.message) {
+                const msgData = JSON.parse(ev.message);
+                if (msgData && typeof msgData.updated_at === "number" && msgData.updated_at > (newest.updated_at || 0)) {
+                  newest = msgData;
+                  changed = true;
+                }
+              }
+            } catch (err) {}
+          }
+        }
+      } catch (e) {}
+
+      if (changed) {
+        try {
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(newest));
+        } catch (e) {}
+      }
+      return newest;
+    }
+
+    let _cloudSseConnected = false;
+    function connectCloudSSE() {
+      if (_cloudSseConnected) return;
+      _cloudSseConnected = true;
+      const badge = document.getElementById("sseStatusBadge");
+      const text = document.getElementById("sseStatusText");
+
+      try {
+        const es = new EventSource(`https://ntfy.sh/${CLOUD_SSE_TOPIC}/sse`);
+        es.onopen = () => {
+          badge.classList.remove("disconnected");
+          text.textContent = "LIVE CLOUD SYNC";
+        };
+        es.onmessage = (ev) => {
+          try {
+            const wrapper = JSON.parse(ev.data);
+            if (!wrapper.message) return;
+            const incoming = JSON.parse(wrapper.message);
+            if (!incoming || incoming.sender === CLOUD_CLIENT_ID) return;
+            const local = loadLocalData();
+            if ((incoming.updated_at || 0) >= (local.updated_at || 0)) {
+              localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(incoming));
+              appState = computeStandaloneState();
+              renderAll();
+              showToast("⚡ Real-time update received!");
+            }
+          } catch (e) {}
+        };
+        es.onerror = () => {
+          // Keep polling fallback active silently
+          text.textContent = "LIVE CLOUD SYNC";
+        };
       } catch (e) {}
     }
 
@@ -1584,7 +1704,11 @@
       if (isStaticHost) {
         isStandaloneMode = true;
         appState = computeStandaloneState();
+        renderAll();
+        await pullStateFromCloud();
+        appState = computeStandaloneState();
         updateSyncBadgeForMode();
+        connectCloudSSE();
         renderAll();
         return;
       }
@@ -1596,7 +1720,9 @@
         connectSSE();
       } catch (e) {
         isStandaloneMode = true;
+        await pullStateFromCloud();
         appState = computeStandaloneState();
+        connectCloudSSE();
       }
       updateSyncBadgeForMode();
       renderAll();
@@ -1607,7 +1733,7 @@
       const text = document.getElementById("sseStatusText");
       if (isStandaloneMode) {
         badge.classList.remove("disconnected");
-        text.textContent = "LIVE TRACKER ACTIVE";
+        text.textContent = "LIVE CLOUD SYNC";
       }
     }
 

@@ -426,7 +426,7 @@
 
     .mini-days-row {
       display: grid;
-      grid-template-columns: repeat(7, 1fr);
+      grid-template-columns: repeat(7, minmax(0, 1fr));
       gap: 5px;
     }
 
@@ -438,6 +438,8 @@
       border: 1px solid transparent;
       transition: transform 0.12s ease, border-color 0.12s ease;
       position: relative;
+      min-width: 0;
+      overflow: hidden;
     }
 
     .mini-day:hover {
@@ -745,7 +747,7 @@
 
     .cal-weekdays {
       display: grid;
-      grid-template-columns: 44px repeat(7, 1fr);
+      grid-template-columns: 44px repeat(7, minmax(0, 1fr));
       gap: 6px;
       margin-bottom: 6px;
       text-align: center;
@@ -757,7 +759,7 @@
 
     .cal-row {
       display: grid;
-      grid-template-columns: 44px repeat(7, 1fr);
+      grid-template-columns: 44px repeat(7, minmax(0, 1fr));
       gap: 6px;
       margin-bottom: 6px;
     }
@@ -785,6 +787,9 @@
 
     .cal-cell {
       min-height: 76px;
+      min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
       border-radius: 9px;
       padding: 7px 8px;
       display: flex;
@@ -893,7 +898,16 @@
       color: #a7f3d0;
     }
 
+    .cell-bottom {
+      min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
+    }
+
     .cell-note {
+      display: block;
+      width: 100%;
+      max-width: 100%;
       font-size: 10.5px;
       color: #fde68a;
       white-space: nowrap;
@@ -2020,14 +2034,15 @@
             e.is_overridden ? "is-overridden" : ""
           ].filter(Boolean).join(" ");
 
+          cellEl.title = `${formatFullDate(e.date)} — ${e.effective_owner}${e.note ? "\nNote: " + e.note : ""}`;
           cellEl.innerHTML = `
             <div class="cell-top">
               <span class="cell-day-num">${cellData.dayNum}</span>
               ${isToday ? '<span class="today-tag">Today</span>' : (e.is_overridden ? '<span class="swap-flag">Swap</span>' : '')}
             </div>
-            <div>
+            <div class="cell-bottom">
               <div class="cell-owner">🚗 ${e.effective_owner}</div>
-              ${e.note ? `<div class="cell-note" title="${e.note}">💬 ${e.note}</div>` : ""}
+              ${e.note ? `<div class="cell-note">💬 ${e.note}</div>` : ""}
             </div>
           `;
           cellEl.addEventListener("click", () => openDayModal(e.date));
